@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,6 +13,7 @@ public class Bullet implements Colisionable {
     private int ySpeed;
     private boolean destroyed = false;
     private Sprite spr;
+    private Sound explosionSound;
 
     /**
      * Constructor para la clase Bullet.
@@ -24,6 +26,8 @@ public class Bullet implements Colisionable {
      */
     public Bullet(float x, float y, int xSpeed, int ySpeed, Texture texture) {
         spr = new Sprite(texture);
+        this.explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
+        explosionSound.setVolume(1, 0.5f);
         spr.setPosition(x, y);
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
@@ -59,6 +63,7 @@ public class Bullet implements Colisionable {
      */
     public boolean checkCollision(Colisionable colisionable) {
         if (spr.getBoundingRectangle().overlaps(colisionable.getArea())) {
+            explosionSound.play();
             this.destroyed = true;
             return true;
         }

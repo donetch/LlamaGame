@@ -26,7 +26,14 @@ public class WeakEnemy extends Enemy {
 
     @Override
     public void update() {
-        super.update();
+                
+        x += xSpeed;
+        y += ySpeed;
+
+        if (x + xSpeed < 0 || x + xSpeed + spr.getWidth() > Gdx.graphics.getWidth()) xSpeed *= -1;
+        if (y + ySpeed < 0 || y + ySpeed + spr.getHeight() > Gdx.graphics.getHeight()) ySpeed *= -1;
+        spr.setPosition(x, y);
+        
         timeSinceLastShot += Gdx.graphics.getDeltaTime();
         if (timeSinceLastShot >= SHOOT_COOLDOWN) {
             shoot();
@@ -37,6 +44,8 @@ public class WeakEnemy extends Enemy {
             Bullet bullet = it.next();
             bullet.update();
         }
+        
+        checkColllion();
     }
 
     @Override
@@ -45,11 +54,6 @@ public class WeakEnemy extends Enemy {
         for (Bullet bullet : bullets) {
             bullet.draw(batch);
         }
-    }
-
-    @Override
-    public void attack() {
-        shoot();
     }
 
     private void shoot() {

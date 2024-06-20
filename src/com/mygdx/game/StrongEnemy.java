@@ -1,6 +1,8 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import java.util.Iterator;
 
 public class StrongEnemy extends Enemy {
 
@@ -11,8 +13,12 @@ public class StrongEnemy extends Enemy {
     }
 
     @Override
-    public void attack() {
-        // StrongEnemy no dispara, pero tiene daño por colisión
-        // En futuras entregas se planea hacer que StrongEnemy también realice ataques
+    public void update() {   
+        x += xSpeed;
+        y += ySpeed;
+
+        if (x + xSpeed < 0 || x + xSpeed + spr.getWidth() > Gdx.graphics.getWidth()) xSpeed *= -1;
+        if (y + ySpeed < 0 || y + ySpeed + spr.getHeight() > Gdx.graphics.getHeight()) ySpeed *= -1;
+        spr.setPosition(x, y);
     }
 }

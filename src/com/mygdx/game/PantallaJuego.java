@@ -47,7 +47,6 @@ public class PantallaJuego implements Screen {
         this.camera.setToOrtho(false, 1200, 800);
 
         // Initialize assets
-        this.explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
         this.gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
         setupAudio();
 
@@ -58,7 +57,6 @@ public class PantallaJuego implements Screen {
     }
 
     private void setupAudio() {
-        explosionSound.setVolume(1, 0.5f);
         gameMusic.setLooping(true);
         gameMusic.setVolume(0.5f);
         gameMusic.play();
@@ -138,13 +136,10 @@ public class PantallaJuego implements Screen {
         for (Iterator<Bullet> it = balas.iterator(); it.hasNext(); ) {
             Bullet bullet = it.next();
             bullet.update();
-            if (checkBulletCollisions(bullet)) {
-                it.remove();
-            }
         }
     }
 
-    private boolean checkBulletCollisions(Bullet bullet) {
+/*    private boolean checkBulletCollisions(Bullet bullet) {
         for (Iterator<Enemy> enemyIt = enemies.iterator(); enemyIt.hasNext(); ) {
             Enemy enemy = enemyIt.next();
             if (bullet.checkCollision(enemy)) {
@@ -159,27 +154,13 @@ public class PantallaJuego implements Screen {
         }
         return false;
     }
-
+*/
+    
     private void updateEnemies() {
         for (Iterator<Enemy> enemyIt = enemies.iterator(); enemyIt.hasNext(); ) {
             Enemy enemy = enemyIt.next();
             enemy.update();
-            if (enemy instanceof WeakEnemy) {
-                updateWeakEnemyBullets((WeakEnemy) enemy);
-            }
-            if (llama.checkCollision(enemy)) {
-                enemyIt.remove();
-            }
-        }
-    }
-
-    private void updateWeakEnemyBullets(WeakEnemy enemy) {
-        for (Iterator<Bullet> bulletIt = enemy.getBullets().iterator(); bulletIt.hasNext(); ) {
-            Bullet bullet = bulletIt.next();
-            bullet.update();
-            if (llama.checkCollision(bullet)) {
-                bulletIt.remove();
-            }
+            
         }
     }
 
@@ -201,17 +182,10 @@ public class PantallaJuego implements Screen {
     private void drawEntities() {
         for (Enemy enemy : enemies) {
             enemy.draw(batch);
-            if (enemy instanceof WeakEnemy) {
-                for (Bullet bullet : ((WeakEnemy) enemy).getBullets()) {
-                    bullet.draw(batch);
-                }
-            }
         }
-
         for (Bullet bullet : balas) {
             bullet.draw(batch);
         }
-
         llama.draw(batch, this);
     }
 

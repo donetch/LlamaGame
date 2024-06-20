@@ -11,6 +11,7 @@ public abstract class Enemy implements Colisionable {
     protected int y;
     protected int xSpeed;
     protected int ySpeed;
+    private boolean destroyed = false;
     protected Sprite spr;
     protected int health;
 
@@ -44,14 +45,7 @@ public abstract class Enemy implements Colisionable {
     /**
      * Actualiza la posición del enemigo.
      */
-    public void update() {
-        x += xSpeed;
-        y += ySpeed;
-
-        if (x + xSpeed < 0 || x + xSpeed + spr.getWidth() > Gdx.graphics.getWidth()) xSpeed *= -1;
-        if (y + ySpeed < 0 || y + ySpeed + spr.getHeight() > Gdx.graphics.getHeight()) ySpeed *= -1;
-        spr.setPosition(x, y);
-    }
+    public abstract void update();
 
     /**
      * Dibuja el enemigo en la pantalla.
@@ -70,9 +64,16 @@ public abstract class Enemy implements Colisionable {
      */
     @Override
     public boolean checkCollision(Colisionable other) {
-        return spr.getBoundingRectangle().overlaps(other.getArea());
+        if(spr.getBoundingRectangle().overlaps(other.getArea())){
+            this.takeDamage(1);
+            if(this.isDead()){
+                this.destroyed = true;
+            }
+            return true;
+        }
+     return false;
     }
-
+    
     /**
      * Obtiene el área del enemigo.
      *
@@ -82,11 +83,6 @@ public abstract class Enemy implements Colisionable {
     public Rectangle getArea() {
         return spr.getBoundingRectangle();
     }
-
-    /**
-     * Método abstracto para que los enemigos ataquen.
-     */
-    public abstract void attack();
 
     /**
      * Aplica daño al enemigo.
