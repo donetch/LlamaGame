@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,9 +12,9 @@ public abstract class Enemy implements Colisionable {
     protected int y;
     protected int xSpeed;
     protected int ySpeed;
-    private boolean destroyed = false;
     protected Sprite spr;
     protected int health;
+    private Sound deathSound;
 
     /**
      * Constructor para la clase Enemy.
@@ -33,6 +34,8 @@ public abstract class Enemy implements Colisionable {
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
         this.health = health;
+        this.deathSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
+        deathSound.setVolume(1, 0.5f);
 
         if (x - size < 0) this.x = x + size;
         if (x + size > Gdx.graphics.getWidth()) this.x = x - size;
@@ -44,8 +47,9 @@ public abstract class Enemy implements Colisionable {
 
     /**
      * Actualiza la posición del enemigo.
+     * @param llama
      */
-    public abstract void update();
+    public abstract void update(Llama llama);
 
     /**
      * Dibuja el enemigo en la pantalla.
@@ -60,18 +64,18 @@ public abstract class Enemy implements Colisionable {
      * Verifica si el enemigo ha colisionado con otro objeto.
      *
      * @param other El objeto con el que se está verificando la colisión.
-     * @return true si ha ocurrido una colisión, false en caso contrario.
      */
     @Override
-    public boolean checkCollision(Colisionable other) {
+    public void checkCollision(Colisionable other) {
         if(spr.getBoundingRectangle().overlaps(other.getArea())){
-            this.takeDamage(1);
-            if(this.isDead()){
-                this.destroyed = true;
-            }
-            return true;
+            handleCollision();
         }
-     return false;
+    }
+    
+    @Override
+    public void handleCollision(){
+        this.takeDamage(1);
+        deathSound.play();
     }
     
     /**

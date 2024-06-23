@@ -26,30 +26,22 @@ public class Llama implements Colisionable {
     private Sound soundBala;
     private Texture txBala;
     private boolean herido = false;
+    private boolean invulnerable = false;
     private int tiempoHerido;
+    private int tiempoInvulnerable = 5;
 
     /**
      * Constructor para la clase Llama.
-     *
-     * @param x          La posición x inicial de la llama.
-     * @param y          La posición y inicial de la llama.
-     * @param tx         La textura de la llama.
-     * @param soundChoque El sonido que se reproduce cuando la llama es herida.
-     * @param txBala     La textura de la bala.
-     * @param soundBala  El sonido que se reproduce cuando la llama dispara.
      */
-    public Llama(int x, int y, Texture tx, Sound soundChoque, Texture txBala, Sound soundBala) {
-        this.sonidoHerido = soundChoque;
-        this.soundBala = soundBala;
-        this.txBala = txBala;
-        this.spr = new Sprite(tx);
+   public Llama(){
+        int y = 30;
+        int x = Gdx.graphics.getWidth() / 2 - 50;
+        this.sonidoHerido = Gdx.audio.newSound(Gdx.files.internal("hurt.ogg"));
+        this.soundBala = Gdx.audio.newSound(Gdx.files.internal("pop-sound.ogg"));
+        this.txBala = new Texture(Gdx.files.internal("Rocket2.png"));
+        this.spr = new Sprite(new Texture(Gdx.files.internal("MainShip3.png")));
         this.spr.setPosition(x, y);
         this.spr.setBounds(x, y, 45, 45);
-    }
-
-    @Override
-    public Rectangle getArea() {
-        return spr.getBoundingRectangle();
     }
 
     /**
@@ -75,7 +67,12 @@ public class Llama implements Colisionable {
             tiempoHerido--;
             if (tiempoHerido <= 0) herido = false;
         }
-
+        if (invulnerable) {
+            tiempoInvulnerable--;
+            if (tiempoInvulnerable <= 0) {
+                invulnerable = false;
+            }
+        }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             shoot(juego);
         }
@@ -139,16 +136,17 @@ public class Llama implements Colisionable {
     }
 
     @Override
-    public boolean checkCollision(Colisionable b) {
-        if (!herido && b.getArea().overlaps(spr.getBoundingRectangle())) {
-            handleCollision(b);
-            return true;
+    public void checkCollision(Colisionable b) {
+        if(!invulnerable){
+            if (!herido && b.getArea().overlaps(spr.getBoundingRectangle())) {
+                handleCollision(); 
+            }
         }
-        return false;
     }
 
-    private void handleCollision(Colisionable b) {
-        if (xVel == 0) xVel += b.getXSpeed() / 2;
+    @Override
+    public void handleCollision() {
+        /*if (xVel == 0) xVel += b.getXSpeed() / 2;
         if (b.getXSpeed() == 0) b.setXSpeed(b.getXSpeed() + (int) xVel / 2);
         xVel = -xVel;
         b.setXSpeed(-b.getXSpeed());
@@ -156,9 +154,11 @@ public class Llama implements Colisionable {
         if (yVel == 0) yVel += b.getYSpeed() / 2;
         if (b.getYSpeed() == 0) b.setYSpeed(b.getYSpeed() + (int) yVel / 2);
         yVel = -yVel;
-        b.setYSpeed(-b.getYSpeed());
+        b.setYSpeed(-b.getYSpeed());*/
 
         vidas--;
+        invulnerable = true;
+        tiempoInvulnerable = 100;
         herido = true;
         tiempoHerido = TIEMPO_HERIDO_MAX;
         sonidoHerido.play();
@@ -174,6 +174,11 @@ public class Llama implements Colisionable {
     }
 
     // Getters y Setters
+
+    @Override
+    public Rectangle getArea() {
+        return spr.getBoundingRectangle();
+    }
 
     @Override
     public int getXSpeed() {
@@ -209,5 +214,9 @@ public class Llama implements Colisionable {
 
     public int getY() {
         return (int) spr.getY();
+    }
+    
+    public boolean isInvulnerable() {
+        return invulnerable;
     }
 }

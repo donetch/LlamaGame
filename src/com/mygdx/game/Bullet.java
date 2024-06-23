@@ -13,7 +13,6 @@ public class Bullet implements Colisionable {
     private int ySpeed;
     private boolean destroyed = false;
     private Sprite spr;
-    private Sound explosionSound;
 
     /**
      * Constructor para la clase Bullet.
@@ -26,8 +25,7 @@ public class Bullet implements Colisionable {
      */
     public Bullet(float x, float y, int xSpeed, int ySpeed, Texture texture) {
         spr = new Sprite(texture);
-        this.explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.ogg"));
-        explosionSound.setVolume(1, 0.5f);
+
         spr.setPosition(x, y);
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
@@ -38,12 +36,6 @@ public class Bullet implements Colisionable {
      */
     public void update() {
         spr.setPosition(spr.getX() + xSpeed, spr.getY() + ySpeed);
-        if (spr.getX() < 0 || spr.getX() + spr.getWidth() > Gdx.graphics.getWidth()) {
-            destroyed = true;
-        }
-        if (spr.getY() < 0 || spr.getY() + spr.getHeight() > Gdx.graphics.getHeight()) {
-            destroyed = true;
-        }
     }
 
     /**
@@ -59,40 +51,54 @@ public class Bullet implements Colisionable {
      * Verifica si la bala ha colisionado con otro objeto.
      *
      * @param colisionable El objeto con el que se está verificando la colisión.
-     * @return true si ha ocurrido una colisión, false en caso contrario.
      */
-    public boolean checkCollision(Colisionable colisionable) {
+    @Override
+    public void checkCollision(Colisionable colisionable) {
+        // Chequeo de colisión con otro objeto Colisionable
         if (spr.getBoundingRectangle().overlaps(colisionable.getArea())) {
-            explosionSound.play();
-            this.destroyed = true;
-            return true;
+            handleCollision();
         }
-        return false;
-    }
 
+        // Chequeo de colisión con el borde de la ventana
+        if (spr.getX() < 0 || spr.getX() + spr.getWidth() > Gdx.graphics.getWidth() ||
+            spr.getY() < 0 || spr.getY() + spr.getHeight() > Gdx.graphics.getHeight()) {
+            handleCollision();
+        }
+    }
+    
+    @Override
+    public void handleCollision() {
+        this.destroyed = true;
+    }
+    
     /**
      * Obtiene el área de la bala.
      *
      * @return El área de la bala como un Rectangle.
      */
+    @Override
     public Rectangle getArea() {
         return spr.getBoundingRectangle();
     }
 
     // Getters y Setters
 
+    @Override
     public int getXSpeed() {
         return xSpeed;
     }
 
+    @Override
     public void setXSpeed(int xSpeed) {
         this.xSpeed = xSpeed;
     }
 
+    @Override
     public int getYSpeed() {
         return ySpeed;
     }
 
+    @Override
     public void setYSpeed(int ySpeed) {
         this.ySpeed = ySpeed;
     }
