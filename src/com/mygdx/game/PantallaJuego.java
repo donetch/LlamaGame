@@ -19,7 +19,6 @@ public class PantallaJuego implements Screen {
     private SpaceNavigation game;
     private OrthographicCamera camera;
     private SpriteBatch batch;
-    private Sound explosionSound;
     private Music gameMusic;
     private int score;
     private int ronda;
@@ -63,38 +62,18 @@ public class PantallaJuego implements Screen {
     }
 
     private Llama initializeLlama(int vidas) {
-        Llama llama =  new Llama(
-            Gdx.graphics.getWidth() / 2 - 50, 30,
-            new Texture(Gdx.files.internal("MainShip3.png")),
-            Gdx.audio.newSound(Gdx.files.internal("hurt.ogg")),
-            new Texture(Gdx.files.internal("Rocket2.png")),
-            Gdx.audio.newSound(Gdx.files.internal("pop-sound.ogg"))
-        );
-        llama.setVidas(vidas);
+        this.llama = Llama.getInstance(); // Use Singleton instance
+        this.llama.setVidas(vidas); // Set vidas
         return llama;
     }
 
     private void initializeEnemies() {
         Random random = new Random();
-        Texture weakEnemyTexture = new Texture(Gdx.files.internal("weakEnemy.png"));
-        Texture strongEnemyTexture = new Texture(Gdx.files.internal("strongEnemy.png"));
-        Texture bulletTexture = new Texture(Gdx.files.internal("rocket3.png"));
-
         for (int i = 0; i < cantEnemy; i++) {
             if (random.nextBoolean()) {
-                enemies.add(new WeakEnemy(
-                    random.nextInt(Gdx.graphics.getWidth()),
-                    50 + random.nextInt(Gdx.graphics.getHeight() - 50),
-                    20 + random.nextInt(10),
-                    velXEnemy, velYEnemy, weakEnemyTexture, bulletTexture
-                ));
+                enemies.add(new WeakEnemy(velXEnemy, velYEnemy));
             } else {
-                enemies.add(new StrongEnemy(
-                    random.nextInt(Gdx.graphics.getWidth()),
-                    50 + random.nextInt(Gdx.graphics.getHeight() - 50),
-                    20 + random.nextInt(10),
-                    velXEnemy, velYEnemy, strongEnemyTexture
-                ));
+                enemies.add(new StrongEnemy(velXEnemy, velYEnemy));
             }
         }
     }
@@ -110,7 +89,7 @@ public class PantallaJuego implements Screen {
     @Override
     public void render(float delta) {
         game.getBatch().begin();
-        game.getBatch().draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones según sea necesario
+        game.getBatch().draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones segÃºn sea necesario
         game.getBatch().end();
 
         camera.update();
@@ -127,42 +106,50 @@ public class PantallaJuego implements Screen {
         batch.end();
     }
 
+    
     private void updateGameLogic() {
         updateBullets();
-        updateEnemies();
+        updateEnemies(llama);
     }
 
     private void updateBullets() {
-        for (Iterator<Bullet> it = balas.iterator(); it.hasNext(); ) {
-            Bullet bullet = it.next();
-            bullet.update();
-        }
-    }
+        List<Bullet> bulletsToRemove = new ArrayList<>();
+        List<Enemy> enemiesToRemove = new ArrayList<>();
 
-/*    private boolean checkBulletCollisions(Bullet bullet) {
-        for (Iterator<Enemy> enemyIt = enemies.iterator(); enemyIt.hasNext(); ) {
-            Enemy enemy = enemyIt.next();
-            if (bullet.checkCollision(enemy)) {
-                explosionSound.play();
-                enemy.takeDamage(1);
+        for (Bullet bullet : balas) {
+            bullet.update();
+            for (Enemy enemy : enemies) {
+                bullet.checkCollision(enemy);
+                if (bullet.isDestroyed()) {
+                    bulletsToRemove.add(bullet);
+                }
+                enemy.checkCollision(bullet);
                 if (enemy.isDead()) {
-                    enemyIt.remove();
+                    enemiesToRemove.add(enemy);
                     score += 10;
                 }
-                return true;
             }
         }
-        return false;
+
+        balas.removeAll(bulletsToRemove);
+        enemies.removeAll(enemiesToRemove);
     }
-*/
     
-    private void updateEnemies() {
-        for (Iterator<Enemy> enemyIt = enemies.iterator(); enemyIt.hasNext(); ) {
-            Enemy enemy = enemyIt.next();
-            enemy.update();
-            
+    private void updateEnemies(Llama llama) {
+        List<Enemy> enemiesToRemove = new ArrayList<>();
+
+        for (Enemy enemy : enemies) {
+            enemy.update(llama);
+            llama.checkCollision(enemy);
+            if (enemy.isDead()) {
+                enemiesToRemove.add(enemy);
+                score += 10;
+            }
         }
+
+        enemies.removeAll(enemiesToRemove);
     }
+
 
     private void checkLevelCompletion() {
         if (enemies.isEmpty()) {
@@ -226,7 +213,6 @@ public class PantallaJuego implements Screen {
 
     @Override
     public void dispose() {
-        explosionSound.dispose();
         gameMusic.dispose();
     }
 }
