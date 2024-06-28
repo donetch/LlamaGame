@@ -61,15 +61,32 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void initializeEnemies(int vidas) {
+        EnemyBuilder builder = new EnemyBuilder();
         llama = Llama.getInstance();
         llama.setInicio();
 
         Random random = new Random();
         for (int i = 0; i < cantEnemy; i++) {
             if (random.nextBoolean()) {
-                enemies.add(new WeakEnemy(velXEnemy, velYEnemy));
+                Enemy weakEnemy = builder.setX(random.nextInt(Gdx.graphics.getWidth()))
+                         .setY(50 + random.nextInt(Gdx.graphics.getHeight() - 50))
+                         .setSize(20 + random.nextInt(10))
+                         .setXSpeed(velXEnemy)
+                         .setYSpeed(velYEnemy)
+                         .setTexture(new Texture(Gdx.files.internal("weakEnemy.png")))
+                         .setHealth(1)
+                         .buildWeakEnemy();
+                enemies.add(weakEnemy);
             } else {
-                enemies.add(new StrongEnemy(velXEnemy, velYEnemy));
+                Enemy strongEnemy = builder.setX(random.nextInt(Gdx.graphics.getWidth()))
+                           .setY(50 + random.nextInt(Gdx.graphics.getHeight() - 50))
+                           .setSize(20 + random.nextInt(10))
+                           .setXSpeed(velXEnemy)
+                           .setYSpeed(velYEnemy)
+                           .setTexture(new Texture(Gdx.files.internal("strongEnemy.png")))
+                           .setHealth(2)
+                           .buildStrongEnemy();
+                enemies.add(strongEnemy);
             }
         }
     }
