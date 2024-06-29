@@ -7,30 +7,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 public class WeakEnemy extends Enemy {
-    private static final int HITS_TO_KILL = 1;
-    private static final float SHOOT_COOLDOWN = 1.0f;
+    private static final float SHOOT_COOLDOWN = 2.0f;
     private static final int BULLET_SPEED_Y = -2;
     
+    private static final Texture bulletTexture = new Texture(Gdx.files.internal("rocket3.png"));
     private List<Bullet> bulletsWE;
     private float timeSinceLastShot;
-    
-    private static final Texture weakEnemyTexture = new Texture(Gdx.files.internal("weakEnemy.png"));
-    private static final Texture bulletTexture = new Texture(Gdx.files.internal("rocket3.png"));
-    private static final Random random = new Random();
 
-    public WeakEnemy(int xSpeed, int ySpeed) {
-        super(
-            random.nextInt(Gdx.graphics.getWidth()), // x
-            50 + random.nextInt(Gdx.graphics.getHeight() - 50), // y
-            20 + random.nextInt(10), // size
-            xSpeed,
-            ySpeed,
-            weakEnemyTexture,
-            HITS_TO_KILL
-        );
+    public WeakEnemy(int x, int y, int size, int xSpeed, int ySpeed, Texture texture, int health) {
+        super(x, y, size, xSpeed, ySpeed, texture, health);
         this.bulletsWE = new ArrayList<>();
         this.timeSinceLastShot = 0;
     }
@@ -38,7 +25,7 @@ public class WeakEnemy extends Enemy {
 
     @Override
     public void update(Llama llama) {
-                
+        List<Bullet> bulletsToRemove = new ArrayList<>();        
         x += xSpeed;
         y += ySpeed;
 
@@ -55,14 +42,16 @@ public class WeakEnemy extends Enemy {
         for (Iterator<Bullet> it = bulletsWE.iterator(); it.hasNext(); ) {
             Bullet bullet = it.next();
             bullet.update();
-            if(!llama.isInvulnerable()){
-                llama.checkCollision(bullet);
+            llama.checkCollision(bullet);
+            bullet.checkCollision(llama);
+            if (bullet.isDestroyed()) {
+                bulletsToRemove.add(bullet);
             }
+            
         }
         
-        if(!llama.isInvulnerable()){
-           checkCollision(llama);   
-        }
+        bulletsWE.removeAll(bulletsToRemove);
+        checkCollision(llama);
         
     }
 

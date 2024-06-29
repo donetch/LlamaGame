@@ -1,79 +1,79 @@
 package com.mygdx.game;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class PantallaJuego implements Screen {
+public class PantallaJuego extends Pantalla {
 
-    private SpaceNavigation game;
-    private OrthographicCamera camera;
-    private SpriteBatch batch;
-    private Music gameMusic;
     private int score;
     private int ronda;
     private int velXEnemy; 
     private int velYEnemy; 
     private int cantEnemy;
     private Texture backgroundImage;
-
-
+    private Music gameMusic;
     private Llama llama;
     private List<Enemy> enemies = new ArrayList<>();
     private ArrayList<Bullet> balas = new ArrayList<>();
 
     public PantallaJuego(SpaceNavigation game, int ronda, int vidas, int score,  
         int velXEnemy, int velYEnemy, int cantEnemy) {
-        this.game = game;
+        super(game);
         this.ronda = ronda;
         this.score = score;
         this.velXEnemy = velXEnemy;
         this.velYEnemy = velYEnemy;
         this.cantEnemy = cantEnemy;
-
-        this.batch = game.getBatch();
-        this.camera = new OrthographicCamera();    
-        this.camera.setToOrtho(false, 1200, 800);
-
-        // Initialize assets
-        this.gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
-        setupAudio();
-
-        // Load textures and initialize game objects
-        backgroundImage = new Texture(Gdx.files.internal("lava.png"));
-        this.llama = initializeLlama(vidas);
         initializeEnemies();
+        Gdx.app.log("PantallaJuego", "PantallaJuego creada");
     }
 
-    private void setupAudio() {
+    @Override
+    protected void initializeAssets() {
+        backgroundImage = new Texture(Gdx.files.internal("lava.png"));
+        gameMusic = Gdx.audio.newMusic(Gdx.files.internal("piano-loops.wav"));
         gameMusic.setLooping(true);
         gameMusic.setVolume(0.5f);
         gameMusic.play();
     }
 
-    private Llama initializeLlama(int vidas) {
-        Llama llama = new Llama();
-        llama.setVidas(vidas);
-        return llama;
+    @Override
+    protected void initializeComponents() {
+        llama = Llama.getInstance();
+    }
+
+    @Override
+    protected void renderComponents(float delta) {
+        batch.draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones según sea necesario
+        dibujaEncabezado();
+        if (!llama.estaHerido()) {
+            updateGameLogic();
+            checkLevelCompletion();
+        }
+        drawEntities();
+        checkGameOver();
     }
 
     private void initializeEnemies() {
+        DirectorBuilder director = new DirectorBuilder();
+        EnemyBuilder builder = new EnemyBuilder();
         Random random = new Random();
+        
         for (int i = 0; i < cantEnemy; i++) {
             if (random.nextBoolean()) {
-                enemies.add(new WeakEnemy(velXEnemy, velYEnemy));
+                director.constructWeakEnemy(builder, random, velXEnemy, velYEnemy);
+                Enemy weakEnemy = builder.buildWeakEnemy();
+                enemies.add(weakEnemy);
             } else {
-                enemies.add(new StrongEnemy(velXEnemy, velYEnemy));
+                director.constructStrongEnemy(builder, random, velXEnemy, velYEnemy);
+                Enemy strongEnemy = builder.buildStrongEnemy();
+                enemies.add(strongEnemy);
             }
         }
     }
@@ -86,27 +86,6 @@ public class PantallaJuego implements Screen {
         game.getFont().draw(batch, "HighScore:" + game.getHighScore(), Gdx.graphics.getWidth() / 2 - 100, 30);
     }
 
-    @Override
-    public void render(float delta) {
-        game.getBatch().begin();
-        game.getBatch().draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones según sea necesario
-        game.getBatch().end();
-
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-
-        batch.begin();
-        dibujaEncabezado();
-        if (!llama.estaHerido()) {
-            updateGameLogic();
-            checkLevelCompletion();
-        }
-        drawEntities();
-        checkGameOver();
-        batch.end();
-    }
-
-    
     private void updateGameLogic() {
         updateBullets();
         updateEnemies(llama);
@@ -134,7 +113,7 @@ public class PantallaJuego implements Screen {
         balas.removeAll(bulletsToRemove);
         enemies.removeAll(enemiesToRemove);
     }
-    
+
     private void updateEnemies(Llama llama) {
         List<Enemy> enemiesToRemove = new ArrayList<>();
 
@@ -149,8 +128,11 @@ public class PantallaJuego implements Screen {
 
         enemies.removeAll(enemiesToRemove);
     }
-
-
+    
+    public boolean agregarBala(Bullet bullet) {
+        return balas.add(bullet);
+    }
+    
     private void checkLevelCompletion() {
         if (enemies.isEmpty()) {
             ronda++;
@@ -159,7 +141,8 @@ public class PantallaJuego implements Screen {
             velYEnemy++;
             cantEnemy += 5;
 
-            Screen nextScreen = new PantallaJuego(game, ronda, llama.getVidas(), score, velXEnemy, velYEnemy, cantEnemy);
+            Gdx.app.log("PantallaJuego", "Nivel completado, avanzando al siguiente nivel");
+            PantallaJuego nextScreen = new PantallaJuego(game, ronda, llama.getVidas(), score, velXEnemy, velYEnemy, cantEnemy);
             nextScreen.resize(1200, 800);
             game.setScreen(nextScreen);
             dispose();
@@ -178,41 +161,32 @@ public class PantallaJuego implements Screen {
 
     private void checkGameOver() {
         if (llama.estaDestruido()) {
+            Gdx.app.log("PantallaJuego", "Juego terminado, mostrando pantalla de Game Over");
             if (score > game.getHighScore()) {
                 game.setHighScore(score);
             }
-            Screen gameOverScreen = new PantallaGameOver(game);
+            PantallaGameOver gameOverScreen = new PantallaGameOver(game);
             gameOverScreen.resize(1200, 800);
             game.setScreen(gameOverScreen);
             dispose();
         }
     }
 
-    public boolean agregarBala(Bullet bullet) {
-        return balas.add(bullet);
+    @Override
+    protected void handleInput() {
+        // Implementación de manejo de entrada si es necesaria
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            Gdx.app.log("PantallaJuego", "Escape key pressed");
+            game.setScreen(new PantallaMenu(game));
+            dispose();
+        }
     }
-
-    @Override
-    public void show() {
-        gameMusic.play();
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        camera.setToOrtho(false, width, height);
-    }
-
-    @Override
-    public void pause() {}
-
-    @Override
-    public void resume() {}
-
-    @Override
-    public void hide() {}
 
     @Override
     public void dispose() {
+        Gdx.app.log("PantallaJuego", "Disposing PantallaJuego");
+        super.dispose();
         gameMusic.dispose();
+        backgroundImage.dispose();
     }
 }
