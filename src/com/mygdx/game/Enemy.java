@@ -19,9 +19,9 @@ public abstract class Enemy implements Colisionable {
     /**
      * Constructor para la clase Enemy.
      *
-     * @param x      La posici√≥n x inicial del enemigo.
-     * @param y      La posici√≥n y inicial del enemigo.
-     * @param size   El tama√±o del enemigo.
+     * @param x      La posiciÛn x inicial del enemigo.
+     * @param y      La posiciÛn y inicial del enemigo.
+     * @param size   El tamaÒo del enemigo.
      * @param xSpeed La velocidad en el eje x del enemigo.
      * @param ySpeed La velocidad en el eje y del enemigo.
      * @param tx     La textura del enemigo.
@@ -46,7 +46,7 @@ public abstract class Enemy implements Colisionable {
     }
 
     /**
-     * Actualiza la posici√≥n del enemigo.
+     * Actualiza la posiciÛn del enemigo.
      * @param llama
      */
     public abstract void update(Llama llama);
@@ -63,7 +63,7 @@ public abstract class Enemy implements Colisionable {
     /**
      * Verifica si el enemigo ha colisionado con otro objeto.
      *
-     * @param other El objeto con el que se est√° verificando la colisi√≥n.
+     * @param other El objeto con el que se est· verificando la colisiÛn.
      */
     @Override
     public void checkCollision(Colisionable other) {
@@ -79,9 +79,9 @@ public abstract class Enemy implements Colisionable {
     }
     
     /**
-     * Obtiene el √°rea del enemigo.
+     * Obtiene el ·rea del enemigo.
      *
-     * @return El √°rea del enemigo como un Rectangle.
+     * @return El ·rea del enemigo como un Rectangle.
      */
     @Override
     public Rectangle getArea() {
@@ -89,16 +89,16 @@ public abstract class Enemy implements Colisionable {
     }
 
     /**
-     * Aplica da√±o al enemigo.
+     * Aplica daÒo al enemigo.
      *
-     * @param damage La cantidad de da√±o a aplicar.
+     * @param damage La cantidad de daÒo a aplicar.
      */
     public void takeDamage(int damage) {
         health -= damage;
     }
 
     /**
-     * Verifica si el enemigo est√° muerto.
+     * Verifica si el enemigo est· muerto.
      *
      * @return true si la salud del enemigo es menor o igual a 0, false en caso contrario.
      */

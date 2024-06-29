@@ -38,6 +38,8 @@ public class PantallaGameOver extends Pantalla {
         if (Gdx.input.isTouched() || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) {
             PantallaJuego pantallaJuego = new PantallaJuego(game, 1, 3, 0, 1, 1, 10);
             pantallaJuego.resize(1200, 800);
+            Llama llama = Llama.getInstance();
+            llama.setInicio();
             game.setScreen(pantallaJuego);
             dispose();
         }

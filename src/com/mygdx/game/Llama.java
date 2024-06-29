@@ -15,12 +15,12 @@ public class Llama implements Colisionable {
     private static final float ACCELERATION = 0.1f;
     private static final float DECELERATION = 0.05f;
     private static final float BULLET_SPEED = 6f;
-    private static final int TIEMPO_HERIDO_MAX = 50;
-    
+    private static final int TIEMPO_HERIDO_MAX = 50; 
     private static Llama instance;
-
+    
+    private HitStrategy hitStrat;
     private boolean destruida = false;
-    private int vidas ;
+    private int vidas = 3;
     private float xVel = 0;
     private float yVel = 0;
     private Sprite spr;
@@ -28,14 +28,13 @@ public class Llama implements Colisionable {
     private Sound soundBala;
     private Texture txBala;
     private boolean herido = false;
-    private boolean invulnerable = false;
     private int tiempoHerido;
-    private int tiempoInvulnerable = 5;
 
     /**
      * Constructor para la clase Llama.
      */
    private Llama(){
+        this.hitStrat = new HitStrategyDefault();
         int y = 30;
         int x = Gdx.graphics.getWidth() / 2 - 50;
         this.sonidoHerido = Gdx.audio.newSound(Gdx.files.internal("hurt.ogg"));
@@ -57,7 +56,7 @@ public class Llama implements Colisionable {
      * Dibuja la llama en la pantalla y maneja su movimiento y disparo.
      *
      * @param batch El SpriteBatch utilizado para dibujar la llama.
-     * @param juego La instancia del juego que contiene la l�gica del juego.
+     * @param juego La instancia del juego que contiene la l?gica del juego.
      */
     public void draw(SpriteBatch batch, PantallaJuego juego) {
         float x = spr.getX();
@@ -67,6 +66,7 @@ public class Llama implements Colisionable {
             handleMovement();
             handleRotation();
             keepWithinBounds();
+            hitStrat.update(this);
             spr.setPosition(x + xVel, y + yVel);
             spr.draw(batch);
         } else {
@@ -76,15 +76,10 @@ public class Llama implements Colisionable {
             tiempoHerido--;
             if (tiempoHerido <= 0) herido = false;
         }
-        if (invulnerable) {
-            tiempoInvulnerable--;
-            if (tiempoInvulnerable <= 0) {
-                invulnerable = false;
-            }
-        }
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             shoot(juego);
         }
+        
     }
 
     private void handleMovement() {
@@ -146,28 +141,18 @@ public class Llama implements Colisionable {
 
     @Override
     public void checkCollision(Colisionable b) {
-        if(!invulnerable){
-            if (!herido && b.getArea().overlaps(spr.getBoundingRectangle())) {
-                handleCollision(); 
-            }
+        if (!herido && b.getArea().overlaps(spr.getBoundingRectangle())) {
+            handleCollision(); 
         }
     }
     
     @Override
     public void handleCollision() {
-        /*if (xVel == 0) xVel += b.getXSpeed() / 2;
-        if (b.getXSpeed() == 0) b.setXSpeed(b.getXSpeed() + (int) xVel / 2);
-        xVel = -xVel;
-        b.setXSpeed(-b.getXSpeed());
-
-        if (yVel == 0) yVel += b.getYSpeed() / 2;
-        if (b.getYSpeed() == 0) b.setYSpeed(b.getYSpeed() + (int) yVel / 2);
-        yVel = -yVel;
-        b.setYSpeed(-b.getYSpeed());*/
-
-        vidas--;
-        invulnerable = true;
-        tiempoInvulnerable = 100;
+        hitStrat.hit(this);
+    }
+    
+    public void recibirDano(){
+        vidas -= 1;
         herido = true;
         tiempoHerido = TIEMPO_HERIDO_MAX;
         sonidoHerido.play();
@@ -182,8 +167,9 @@ public class Llama implements Colisionable {
         return herido;
     }
 
-    // Getters y Setters
+    //Getters y Setters
     public void setInicio(){
+        setHitStrategy(new HitStrategyDefault());
         this.vidas = 3;
         this.destruida = false;
     }
@@ -229,7 +215,8 @@ public class Llama implements Colisionable {
         return (int) spr.getY();
     }
     
-    public boolean isInvulnerable() {
-        return invulnerable;
+    void setHitStrategy(HitStrategy strat){
+        hitStrat = strat;
     }
+    
 }

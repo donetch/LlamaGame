@@ -25,7 +25,7 @@ public class WeakEnemy extends Enemy {
 
     @Override
     public void update(Llama llama) {
-                
+        List<Bullet> bulletsToRemove = new ArrayList<>();        
         x += xSpeed;
         y += ySpeed;
 
@@ -42,14 +42,16 @@ public class WeakEnemy extends Enemy {
         for (Iterator<Bullet> it = bulletsWE.iterator(); it.hasNext(); ) {
             Bullet bullet = it.next();
             bullet.update();
-            if(!llama.isInvulnerable()){
-                llama.checkCollision(bullet);
+            llama.checkCollision(bullet);
+            bullet.checkCollision(llama);
+            if (bullet.isDestroyed()) {
+                bulletsToRemove.add(bullet);
             }
+            
         }
         
-        if(!llama.isInvulnerable()){
-           checkCollision(llama);   
-        }
+        bulletsWE.removeAll(bulletsToRemove);
+        checkCollision(llama);
         
     }
 
@@ -64,8 +66,8 @@ public class WeakEnemy extends Enemy {
     private void shoot() {
         // Crear una bala que se mueva hacia abajo
         bulletsWE.add(new Bullet(
-            spr.getX() + spr.getWidth() / 2, // PosiciÃ³n x
-            spr.getY(), // PosiciÃ³n y
+            spr.getX() + spr.getWidth() / 2, // Posición x
+            spr.getY(), // Posición y
             0, // Velocidad x
             BULLET_SPEED_Y, // Velocidad y (hacia abajo)
             bulletTexture // Textura de la bala

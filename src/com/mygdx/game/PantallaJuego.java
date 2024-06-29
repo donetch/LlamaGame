@@ -30,7 +30,7 @@ public class PantallaJuego extends Pantalla {
         this.velXEnemy = velXEnemy;
         this.velYEnemy = velYEnemy;
         this.cantEnemy = cantEnemy;
-        initializeEnemies(vidas);
+        initializeEnemies();
         Gdx.app.log("PantallaJuego", "PantallaJuego creada");
     }
 
@@ -45,12 +45,12 @@ public class PantallaJuego extends Pantalla {
 
     @Override
     protected void initializeComponents() {
-        // Any additional components initialization
+        llama = Llama.getInstance();
     }
 
     @Override
     protected void renderComponents(float delta) {
-        batch.draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones segÃºn sea necesario
+        batch.draw(backgroundImage, 0, 0, 1200, 800); // Ajusta las dimensiones según sea necesario
         dibujaEncabezado();
         if (!llama.estaHerido()) {
             updateGameLogic();
@@ -60,32 +60,19 @@ public class PantallaJuego extends Pantalla {
         checkGameOver();
     }
 
-    private void initializeEnemies(int vidas) {
+    private void initializeEnemies() {
+        DirectorBuilder director = new DirectorBuilder();
         EnemyBuilder builder = new EnemyBuilder();
-        llama = Llama.getInstance();
-        llama.setInicio();
-
         Random random = new Random();
+        
         for (int i = 0; i < cantEnemy; i++) {
             if (random.nextBoolean()) {
-                Enemy weakEnemy = builder.setX(random.nextInt(Gdx.graphics.getWidth()))
-                         .setY(50 + random.nextInt(Gdx.graphics.getHeight() - 50))
-                         .setSize(20 + random.nextInt(10))
-                         .setXSpeed(velXEnemy)
-                         .setYSpeed(velYEnemy)
-                         .setTexture(new Texture(Gdx.files.internal("weakEnemy.png")))
-                         .setHealth(1)
-                         .buildWeakEnemy();
+                director.constructWeakEnemy(builder, random, velXEnemy, velYEnemy);
+                Enemy weakEnemy = builder.buildWeakEnemy();
                 enemies.add(weakEnemy);
             } else {
-                Enemy strongEnemy = builder.setX(random.nextInt(Gdx.graphics.getWidth()))
-                           .setY(50 + random.nextInt(Gdx.graphics.getHeight() - 50))
-                           .setSize(20 + random.nextInt(10))
-                           .setXSpeed(velXEnemy)
-                           .setYSpeed(velYEnemy)
-                           .setTexture(new Texture(Gdx.files.internal("strongEnemy.png")))
-                           .setHealth(2)
-                           .buildStrongEnemy();
+                director.constructStrongEnemy(builder, random, velXEnemy, velYEnemy);
+                Enemy strongEnemy = builder.buildStrongEnemy();
                 enemies.add(strongEnemy);
             }
         }
@@ -187,7 +174,7 @@ public class PantallaJuego extends Pantalla {
 
     @Override
     protected void handleInput() {
-        // ImplementaciÃ³n de manejo de entrada si es necesaria
+        // Implementación de manejo de entrada si es necesaria
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.log("PantallaJuego", "Escape key pressed");
             game.setScreen(new PantallaMenu(game));

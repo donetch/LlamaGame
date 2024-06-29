@@ -1,3 +1,4 @@
+
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
@@ -16,7 +17,7 @@ public class PantallaMenu extends Pantalla{
     public PantallaMenu(SpaceNavigation game) {
         super(game);
     }
-
+   
     @Override
     protected void initializeAssets(){
         mainMenuMusic = Gdx.audio.newMusic(Gdx.files.internal("mainMenuSong.wav"));
@@ -33,7 +34,7 @@ public class PantallaMenu extends Pantalla{
     }
 
     private void initializeStartButton() {
-        startButton = new Rectangle(400, 100, 400, 100); // Ajusta las coordenadas y dimensiones segÃºn sea necesario
+        startButton = new Rectangle(400, 100, 400, 100); // Ajusta las coordenadas y dimensiones según sea necesario
     }
 
     @Override
@@ -61,8 +62,8 @@ public class PantallaMenu extends Pantalla{
     @Override
     public void dispose() {
         super.dispose();
-        mainMenuMusic.dispose(); // Liberar los recursos de la mÃºsica
+        mainMenuMusic.dispose(); // Liberar los recursos de la música
         backgroundImage.dispose(); // Liberar los recursos de la imagen de fondo
-        startButtonTexture.dispose(); // Liberar los recursos del botÃ³n de inicio
+        startButtonTexture.dispose(); // Liberar los recursos del botón de inicio
     }
 }

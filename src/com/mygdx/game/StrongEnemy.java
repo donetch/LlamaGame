@@ -17,9 +17,6 @@ public class StrongEnemy extends Enemy {
         if (x + xSpeed < 0 || x + xSpeed + spr.getWidth() > Gdx.graphics.getWidth()) xSpeed *= -1;
         if (y + ySpeed < 0 || y + ySpeed + spr.getHeight() > Gdx.graphics.getHeight()) ySpeed *= -1;
         spr.setPosition(x, y);
-        
-        if(!llama.isInvulnerable()){
-            checkCollision(llama);
-        }
+        checkCollision(llama);
     }
 }
